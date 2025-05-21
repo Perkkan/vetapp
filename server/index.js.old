@@ -1,0 +1,275 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const PORT = process.env.PORT || 5000;
+const propietariosController = require('./controllers/propietariosController');
+const inventarioController = require('./controllers/inventarioController');
+const facturacionController = require('./controllers/facturacionController');
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rutas
+app.get('/', (req, res) => {
+  res.json({ mensaje: 'API del Sistema de Administración de Clínicas Veterinarias' });
+});
+
+// Importar rutas (comentadas hasta que se creen los archivos correspondientes)
+// const clinicasRoutes = require('./routes/clinicas');
+// const usuariosRoutes = require('./routes/usuarios');
+// const veterinariosRoutes = require('./routes/veterinarios');
+// const pacientesRoutes = require('./routes/pacientes');
+// const cuidadoresRoutes = require('./routes/cuidadores');
+// const historialesRoutes = require('./routes/historiales');
+// const inventarioRoutes = require('./routes/inventario');
+// const citasRoutes = require('./routes/citas');
+// const authRoutes = require('./routes/auth');
+
+// Usar rutas (comentadas hasta que se creen los archivos correspondientes)
+// app.use('/api/auth', authRoutes);
+// app.use('/api/clinicas', clinicasRoutes);
+// app.use('/api/usuarios', usuariosRoutes);
+// app.use('/api/veterinarios', veterinariosRoutes);
+// app.use('/api/pacientes', pacientesRoutes);
+// app.use('/api/cuidadores', cuidadoresRoutes);
+// app.use('/api/historiales', historialesRoutes);
+// app.use('/api/inventario', inventarioRoutes);
+// app.use('/api/citas', citasRoutes);
+
+// Ruta temporal para probar el inicio de sesión
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // Usuario de prueba
+  if (email === 'admin@example.com' && password === 'password') {
+    res.json({
+      success: true,
+      token: 'mock-jwt-token',
+      user: {
+        id: 1,
+        nombre: 'Administrador',
+        email: 'admin@example.com',
+        rol: 'superadministrativo'
+      }
+    });
+  } else if (email === 'vet@example.com' && password === 'password') {
+    res.json({
+      success: true,
+      token: 'mock-jwt-token-vet',
+      user: {
+        id: 2,
+        nombre: 'Veterinario',
+        email: 'vet@example.com',
+        rol: 'veterinario'
+      }
+    });
+  } else if (email === 'cuidador@example.com' && password === 'password') {
+    res.json({
+      success: true,
+      token: 'mock-jwt-token-cuidador',
+      user: {
+        id: 3,
+        nombre: 'Cuidador',
+        email: 'cuidador@example.com',
+        rol: 'cuidador'
+      }
+    });
+  } else {
+    res.status(401).json({
+      success: false,
+      mensaje: 'Credenciales inválidas'
+    });
+  }
+});
+
+// Rutas de propietarios
+app.get('/api/propietarios', propietariosController.getAllPropietarios);
+app.get('/api/propietarios/:id', propietariosController.getPropietarioById);
+app.post('/api/propietarios', propietariosController.createPropietario);
+app.put('/api/propietarios/:id', propietariosController.updatePropietario);
+app.delete('/api/propietarios/:id', propietariosController.deletePropietario);
+
+// Rutas de inventario
+app.get('/api/inventario', inventarioController.getAllProductos);
+app.get('/api/inventario/:id', inventarioController.getProductoById);
+app.post('/api/inventario', inventarioController.createProducto);
+app.put('/api/inventario/:id', inventarioController.updateProducto);
+app.delete('/api/inventario/:id', inventarioController.deleteProducto);
+app.patch('/api/inventario/:id/stock', inventarioController.updateStock);
+
+// Rutas de facturación
+app.get('/api/facturas', facturacionController.getAllFacturas);
+app.get('/api/facturas/:id', facturacionController.getFacturaById);
+app.post('/api/facturas', facturacionController.createFactura);
+app.put('/api/facturas/:id', facturacionController.updateFactura);
+app.delete('/api/facturas/:id', facturacionController.deleteFactura);
+
+// Endpoint para obtener una factura específica por ID
+app.get('/api/facturas/:id', (req, res) => {
+  const id = req.params.id;
+  
+  // Datos de ejemplo
+  const facturaEjemplo = {
+    id: 'F2023-001',
+    fecha: new Date(2023, 2, 15),
+    fechaVencimiento: new Date(2023, 3, 15),
+    clienteId: 1,
+    cliente: 'Juan Pérez',
+    nif: '12345678Z',
+    direccion: 'Calle Principal 123, 28001, Madrid',
+    email: 'juan@example.com',
+    telefono: '612345678',
+    estado: 'Pagada',
+    formaPago: 'Transferencia',
+    items: [
+      { 
+        id: 1, 
+        concepto: 'Consulta veterinaria', 
+        cantidad: 1, 
+        precioUnitario: 60, 
+        iva: 21, 
+        subtotal: 60,
+        importeIva: 12.60,
+        total: 72.60 
+      },
+      { 
+        id: 2, 
+        concepto: 'Vacuna triple felina', 
+        cantidad: 1, 
+        precioUnitario: 45, 
+        iva: 21, 
+        subtotal: 45,
+        importeIva: 9.45,
+        total: 54.45 
+      },
+      { 
+        id: 3, 
+        concepto: 'Pipeta antipulgas', 
+        cantidad: 1, 
+        precioUnitario: 19.38, 
+        iva: 21, 
+        subtotal: 19.38,
+        importeIva: 4.07,
+        total: 23.45 
+      }
+    ],
+    subtotal: 124.38,
+    iva: 26.12,
+    total: 150.50,
+    clinica: {
+      nombre: 'Clínica Veterinaria VetAdmin',
+      direccion: 'Avenida de la Veterinaria 45, 28001, Madrid',
+      cif: 'B12345678',
+      telefono: '910000000',
+      email: 'info@vetadmin.es',
+      web: 'www.vetadmin.es'
+    }
+  };
+  
+  if (id === 'F2023-001') {
+    res.json(facturaEjemplo);
+  } else if (id === 'F2023-002') {
+    // Modificar algunos datos para el segundo ejemplo
+    const factura2 = {
+      ...facturaEjemplo,
+      id: 'F2023-002',
+      fecha: new Date(2023, 2, 18),
+      fechaVencimiento: new Date(2023, 3, 18),
+      clienteId: 2,
+      cliente: 'María López',
+      nif: '87654321X',
+      email: 'maria@example.com',
+      items: [
+        { 
+          id: 1, 
+          concepto: 'Consulta veterinaria', 
+          cantidad: 1, 
+          precioUnitario: 60, 
+          iva: 21, 
+          subtotal: 60,
+          importeIva: 12.60,
+          total: 72.60 
+        },
+        { 
+          id: 2, 
+          concepto: 'Desparasitación', 
+          cantidad: 1, 
+          precioUnitario: 10.87, 
+          iva: 21, 
+          subtotal: 10.87,
+          importeIva: 2.28,
+          total: 13.15 
+        }
+      ],
+      subtotal: 70.87,
+      iva: 14.88,
+      total: 85.75
+    };
+    res.json(factura2);
+  } else {
+    res.status(404).json({ 
+      success: false, 
+      mensaje: 'Factura no encontrada' 
+    });
+  }
+});
+
+// Endpoint para crear una nueva factura
+app.post('/api/facturas', (req, res) => {
+  // En un caso real, aquí se validarían los datos y se guardarían en la base de datos
+  const nuevaFactura = req.body;
+  
+  // Simulamos una respuesta exitosa
+  res.status(201).json({
+    success: true,
+    mensaje: 'Factura creada correctamente',
+    factura: {
+      ...nuevaFactura,
+      id: `F${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+    }
+  });
+});
+
+// Endpoint para actualizar una factura existente
+app.put('/api/facturas/:id', (req, res) => {
+  const id = req.params.id;
+  const facturaActualizada = req.body;
+  
+  // Simulamos una respuesta exitosa
+  res.json({
+    success: true,
+    mensaje: 'Factura actualizada correctamente',
+    factura: {
+      ...facturaActualizada,
+      id
+    }
+  });
+});
+
+// Endpoint para eliminar una factura
+app.delete('/api/facturas/:id', (req, res) => {
+  const id = req.params.id;
+  
+  // Simulamos una respuesta exitosa
+  res.json({
+    success: true,
+    mensaje: `Factura ${id} eliminada correctamente`
+  });
+});
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    mensaje: 'Error en el servidor',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Error interno'
+  });
+});
+
+// Iniciar el servidor
+app.listen(PORT, () => {
+  console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+}); 
