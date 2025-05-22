@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 // IMPORTANTE: Modo desarrollo activado
-const MODO_DESARROLLO = false;
+const MODO_DESARROLLO = true;
 
 // Datos de ejemplo para usuarios (los mismos que en Users.js)
 const sampleUsers = [
