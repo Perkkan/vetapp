@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  veterinaria:
+    build: .
+    ports:
+      - "5001:5001"
+    command: node api_veterinaria.js
+    networks:
+      - vet_network
+    restart: unless-stopped
+
+  clinicas:
+    build: .
+    ports:
+      - "5005:5005"
+    command: node api_clinicas.js
+    networks:
+      - vet_network
+    restart: unless-stopped
+
+  compras:
+    build: .
+    ports:
+      - "5004:5004"
+    command: node api_compras.js
+    networks:
+      - vet_network
+    restart: unless-stopped
+
+  hospitalizacion:
+    build: .
+    ports:
+      - "5000:5000"
+    command: node api_hospitalizacion.js
+    networks:
+      - vet_network
+    restart: unless-stopped
+
+  recursos-humanos:
+    build: .
+    ports:
+      - "5006:5006"
+    command: node api_recursos_humanos.js
+    networks:
+      - vet_network
+    restart: unless-stopped
+
+networks:
+  vet_network:
+    driver: bridge
