@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const notificacionesController = require('../controllers/notificacionesController');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, hasRole } = require('../middleware/auth');
 
 // Aplicar middleware de autenticación a todas las rutas
 router.use(verifyToken);
@@ -19,10 +19,11 @@ router.put('/:id/leer', notificacionesController.markAsRead);
 router.put('/leer-todas', notificacionesController.markAllAsRead);
 
 // Eliminar una notificación
+// Users should be able to delete their own notifications. Controller should enforce this.
 router.delete('/:id', notificacionesController.deleteNotificacion);
 
 // Crear una nueva notificación (para administradores)
-router.post('/', notificacionesController.createNotificacion);
+router.post('/', hasRole(['admin', 'superadmin']), notificacionesController.createNotificacion);
 
 // Obtener notificaciones por tipo
 router.get('/tipo/:tipo', notificacionesController.getNotificacionesByTipo);

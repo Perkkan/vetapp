@@ -75,7 +75,7 @@ exports.hasRole = (roles) => {
 exports.hasPermiso = (permisos) => {
   return async (req, res, next) => {
     try {
-      const db = require('../database/db');
+      const { query } = require('../config/database');
       
       // Verificar si el usuario está autenticado
       if (!req.user) {
@@ -99,7 +99,7 @@ exports.hasPermiso = (permisos) => {
         WHERE r.nombre = ?
       `;
       
-      const [permisosUsuario] = await db.query(permisosQuery, [req.user.rol]);
+      const [permisosUsuario] = await query(permisosQuery, [req.user.rol]);
       const permisosArray = permisosUsuario.map(p => p.nombre);
       
       // Verificar si el usuario tiene alguno de los permisos requeridos
