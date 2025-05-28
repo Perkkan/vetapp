@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../database/db');
+const { query } = require('../config/database');
 const { sendEmailPasswordRecovery } = require('../utils/emailService');
 const crypto = require('crypto');
 
@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
       WHERE u.email = ? AND u.activo = 1
     `;
     
-    const [users] = await db.query(userQuery, [email]);
+    const [users] = await query(userQuery, [email]);
 
     if (users.length === 0) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
@@ -58,14 +58,14 @@ exports.login = async (req, res) => {
       WHERE r.nombre = ?
     `;
     
-    const [permisos] = await db.query(permisosQuery, [user.rol]);
+    const [permisos] = await query(permisosQuery, [user.rol]);
     const permisosArray = permisos.map(p => p.nombre);
 
     // Generar token JWT
     const token = generateToken(user);
 
     // Registrar el inicio de sesión
-    await db.query(
+    await query(
       'INSERT INTO logs_acceso (usuario_id, accion, ip) VALUES (?, ?, ?)', 
       [user.id, 'login', req.ip]
     );
@@ -115,7 +115,7 @@ exports.register = async (req, res) => {
     }
 
     // Verificar si el email ya existe
-    const [existingUsers] = await db.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+    const [existingUsers] = await query('SELECT id FROM usuarios WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
       return res.status(400).json({ message: 'El email ya está registrado' });
     }
@@ -125,13 +125,13 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insertar usuario en la base de datos
-    const [result] = await db.query(
+    const [result] = await query(
       'INSERT INTO usuarios (nombre, email, password, rol, clinica_id, creado_por) VALUES (?, ?, ?, ?, ?, ?)',
       [nombre, email, hashedPassword, rol, clinicaId, userReq.id]
     );
 
     // Registrar la acción
-    await db.query(
+    await query(
       'INSERT INTO logs_acceso (usuario_id, accion, detalles) VALUES (?, ?, ?)', 
       [userReq.id, 'crear_usuario', `Creó usuario ${email} con rol ${rol}`]
     );
@@ -160,7 +160,7 @@ exports.getUserPermisos = async (req, res) => {
 
     // Si es superadmin, tiene todos los permisos
     if (req.user.rol === 'superadmin') {
-      const [allPermisos] = await db.query('SELECT nombre FROM permisos');
+      const [allPermisos] = await query('SELECT nombre FROM permisos');
       const permisosArray = allPermisos.map(p => p.nombre);
       return res.json(permisosArray);
     }
@@ -174,7 +174,7 @@ exports.getUserPermisos = async (req, res) => {
       WHERE r.nombre = ?
     `;
     
-    const [permisos] = await db.query(permisosQuery, [req.user.rol]);
+    const [permisos] = await query(permisosQuery, [req.user.rol]);
     const permisosArray = permisos.map(p => p.nombre);
 
     res.json(permisosArray);
@@ -192,7 +192,7 @@ exports.changePassword = async (req, res) => {
     const userId = req.user.id;
 
     // Obtener datos del usuario
-    const [users] = await db.query('SELECT password FROM usuarios WHERE id = ?', [userId]);
+    const [users] = await query('SELECT password FROM usuarios WHERE id = ?', [userId]);
     
     if (users.length === 0) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -209,10 +209,10 @@ exports.changePassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Actualizar contraseña
-    await db.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, userId]);
+    await query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, userId]);
 
     // Registrar cambio de contraseña en logs
-    await db.query(
+    await query(
       'INSERT INTO logs_acceso (usuario_id, accion) VALUES (?, ?)', 
       [userId, 'cambio_password']
     );
@@ -231,7 +231,7 @@ exports.requestPasswordReset = async (req, res) => {
     const { email } = req.body;
 
     // Verificar si el usuario existe
-    const [users] = await db.query('SELECT id, nombre FROM usuarios WHERE email = ? AND activo = 1', [email]);
+    const [users] = await query('SELECT id, nombre FROM usuarios WHERE email = ? AND activo = 1', [email]);
     
     if (users.length === 0) {
       // No revelar si el usuario existe o no por razones de seguridad
@@ -244,7 +244,7 @@ exports.requestPasswordReset = async (req, res) => {
     expiration.setHours(expiration.getHours() + 1); // Token válido por 1 hora
 
     // Guardar token en la base de datos
-    await db.query(
+    await query(
       'INSERT INTO password_reset_tokens (usuario_id, token, expiracion) VALUES (?, ?, ?)',
       [users[0].id, resetToken, expiration]
     );
@@ -266,7 +266,7 @@ exports.resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
 
     // Verificar si el token existe y no ha expirado
-    const [tokens] = await db.query(
+    const [tokens] = await query(
       'SELECT usuario_id, expiracion FROM password_reset_tokens WHERE token = ? AND usado = 0',
       [token]
     );
@@ -287,13 +287,13 @@ exports.resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Actualizar contraseña del usuario
-    await db.query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, usuario_id]);
+    await query('UPDATE usuarios SET password = ? WHERE id = ?', [hashedPassword, usuario_id]);
 
     // Marcar token como usado
-    await db.query('UPDATE password_reset_tokens SET usado = 1 WHERE token = ?', [token]);
+    await query('UPDATE password_reset_tokens SET usado = 1 WHERE token = ?', [token]);
 
     // Registrar cambio de contraseña en logs
-    await db.query(
+    await query(
       'INSERT INTO logs_acceso (usuario_id, accion, detalles) VALUES (?, ?, ?)', 
       [usuario_id, 'reset_password', 'Restablecimiento por token']
     );

@@ -49,6 +49,7 @@ INSERT INTO permisos (codigo, descripcion) VALUES
 ('pacientes_crear', 'Crear nuevos pacientes'),
 ('pacientes_editar', 'Editar pacientes existentes'),
 ('pacientes_eliminar', 'Eliminar pacientes'),
+('pacientes_ver_por_propietario', 'Ver pacientes de un propietario específico'),
 ('citas_ver', 'Ver lista de citas'),
 ('citas_crear', 'Crear nuevas citas'),
 ('citas_editar', 'Editar citas existentes'),
@@ -56,6 +57,8 @@ INSERT INTO permisos (codigo, descripcion) VALUES
 ('historiales_ver', 'Ver historiales médicos'),
 ('historiales_crear', 'Crear historiales médicos'),
 ('historiales_editar', 'Editar historiales médicos'),
+('historiales_eliminar', 'Eliminar historiales médicos'),
+('historiales_ver_por_paciente', 'Ver historiales de un paciente específico'),
 ('hospitalizacion_ver', 'Ver pacientes hospitalizados'),
 ('hospitalizacion_crear', 'Hospitalizar pacientes'),
 ('hospitalizacion_editar', 'Actualizar estado de hospitalización'),
@@ -64,12 +67,17 @@ INSERT INTO permisos (codigo, descripcion) VALUES
 ('inventario_crear', 'Añadir productos al inventario'),
 ('inventario_editar', 'Editar productos del inventario'),
 ('inventario_eliminar', 'Eliminar productos del inventario'),
+('inventario_actualizar_stock', 'Actualizar stock de un producto'),
 ('facturacion_ver', 'Ver facturas'),
 ('facturacion_crear', 'Crear nuevas facturas'),
 ('facturacion_editar', 'Editar facturas existentes'),
 ('facturacion_eliminar', 'Eliminar facturas'),
 ('sala_espera_ver', 'Ver sala de espera'),
-('sala_espera_gestionar', 'Gestionar pacientes en sala de espera');
+('sala_espera_gestionar', 'Gestionar pacientes en sala de espera'),
+('propietarios_ver', 'Ver lista de propietarios'),
+('propietarios_crear', 'Crear nuevos propietarios'),
+('propietarios_editar', 'Editar propietarios existentes'),
+('propietarios_eliminar', 'Eliminar propietarios');
 
 -- Crear tabla de relación roles-permisos
 CREATE TABLE IF NOT EXISTS roles_permisos (
@@ -97,6 +105,22 @@ CREATE TABLE IF NOT EXISTS usuarios (
     FOREIGN KEY (clinica_id) REFERENCES clinicas(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- (Asegúrate que esto esté después de CREATE TABLE usuarios y CREATE TABLE clinicas)
+
+-- Crear tabla de veterinarios
+CREATE TABLE IF NOT EXISTS veterinarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT UNIQUE NULL, 
+    nombre VARCHAR(100) NOT NULL,
+    especialidad VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(100) UNIQUE,
+    activo BOOLEAN DEFAULT TRUE,
+    clinica_id INT NULL,      
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (clinica_id) REFERENCES clinicas(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Crear tabla de notificaciones
 CREATE TABLE IF NOT EXISTS notificaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -111,10 +135,6 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     relacionado_id INT NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Agregar campo de clínica a la tabla de usuarios
-ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS clinica_id INT NULL;
-ALTER TABLE usuarios ADD CONSTRAINT fk_usuario_clinica FOREIGN KEY (clinica_id) REFERENCES clinicas(id) ON DELETE SET NULL;
 
 -- Crear tabla de sala de espera
 CREATE TABLE IF NOT EXISTS sala_espera (

@@ -31,9 +31,15 @@ async function setupDatabase() {
     
     // Leer y ejecutar el archivo de creación de tablas
     const createTablesSQL = fs.readFileSync(path.join(__dirname, 'create_tables.sql'), 'utf8');
-    console.log('Ejecutando script de creación de tablas...');
+    console.log('Ejecutando script de creación de tablas (create_tables.sql)...');
     await connection.query(createTablesSQL);
-    console.log('Tablas creadas correctamente');
+    console.log('Script create_tables.sql ejecutado correctamente');
+
+    // Leer y ejecutar el archivo schema.sql
+    const schemaSQL = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+    console.log('Ejecutando script schema.sql...');
+    await connection.query(schemaSQL);
+    console.log('Script schema.sql ejecutado correctamente');
     
     // Leer y ejecutar el archivo de inicialización de roles y permisos
     const initRolesPermisosSQL = fs.readFileSync(path.join(__dirname, 'init_roles_permisos.sql'), 'utf8');
