@@ -13,7 +13,8 @@ import {
   FaFileInvoiceDollar,
   FaHistory,
   FaShoppingCart,
-  FaUsers
+  FaUsers,
+  FaExternalLinkAlt
 } from 'react-icons/fa';
 import { Modal, Button } from 'react-bootstrap';
 import { Nav } from 'react-bootstrap';
@@ -125,6 +126,13 @@ const Sidebar = () => {
       title: 'Usuarios',
       path: '/usuarios',
       icon: <FaUsers />,
+      isImplemented: true
+    },
+    {
+      id: 15,
+      title: 'GoHighLevel',
+      path: '/gohighlevel',
+      icon: <FaExternalLinkAlt />,
       isImplemented: true
     }
   ];

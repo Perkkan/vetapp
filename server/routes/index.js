@@ -15,6 +15,7 @@ const notificacionesRoutes = require('./notificaciones');
 const usuariosRoutes = require('./usuarios');
 const rolesRoutes = require('./roles');
 const authRoutes = require('./auth');
+const gohighlevelRoutes = require('./gohighlevel');
 
 // Definir rutas principales
 router.use('/pacientes', pacientesRoutes);
@@ -30,6 +31,7 @@ router.use('/notificaciones', notificacionesRoutes);
 router.use('/usuarios', usuariosRoutes);
 router.use('/roles', rolesRoutes);
 router.use('/auth', authRoutes);
+router.use('/gohighlevel', gohighlevelRoutes);
 
 // Ruta raíz para verificar que la API está funcionando
 router.get('/', (req, res) => {
