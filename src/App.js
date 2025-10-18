@@ -22,6 +22,7 @@ import Compras from './pages/Compras';
 import RecursosHumanos from './pages/RecursosHumanos';
 import Clinicas from './pages/Clinicas';
 import Users from './pages/Users';
+import GoHighLevel from './components/GoHighLevel/GoHighLevel';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -72,6 +73,11 @@ function App() {
           <Route path="usuarios" element={
             <PrivateRoute>
               <Users />
+            </PrivateRoute>
+          } />
+          <Route path="gohighlevel" element={
+            <PrivateRoute>
+              <GoHighLevel />
             </PrivateRoute>
           } />
         </Route>
