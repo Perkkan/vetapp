@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const GOHIGHLEVEL_API_KEY = process.env.GOHIGHLEVEL_API_KEY;
-const GOHIGHLEVEL_API_URL = 'https://rest.gohighlevel.com/v1';
+const GOHIGHLEVEL_API_URL = process.env.GOHIGHLEVEL_API_BASE_URL;
 
 // Get all contacts
 exports.getContacts = async (req, res) => {
